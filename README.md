@@ -168,7 +168,205 @@ The mock NNTP server listens on port `1119`. You can interact with it using a si
     # (server responds with the configured mock response for ARTICLE)
     ```
 
-    *Note: Currently, the NNTP server only increments the call count and returns a basic mock if configured. It does not perform actual NNTP protocol parsing beyond the command name.*
+### NNTP Response Lookup Order
+
+When the server receives an NNTP command, it resolves the response in this order:
+
+1. **Article-keyed yenc body mock** — If the command is `BODY` and an article ID is provided, the server checks for a yenc body mock matching that exact article ID.
+2. **Command-level mock** — Falls back to the command-keyed mock (e.g., all `BODY` commands return the same response).
+3. **500 error** — If no mock is configured, responds with `500 Command not recognized`.
+
+## Testcontainer Module
+
+The `testcontainer` module provides a Testcontainers wrapper and a Kotlin client DSL for use in integration tests. It is published as a Maven artifact and can be added as a test dependency.
+
+### Dependency
+
+Add the testcontainer module to your project:
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    testImplementation("io.skjaere:mock-nntp-server-testcontainer:<version>")
+}
+```
+
+### MockNntpServerContainer
+
+`MockNntpServerContainer` extends Testcontainers' `GenericContainer` and manages the mock NNTP server Docker image lifecycle.
+
+```kotlin
+import io.skjaere.mocknntp.testcontainer.MockNntpServerContainer
+
+val container = MockNntpServerContainer() // defaults to "mock-nntp-server:latest"
+container.start()
+
+// Access mapped ports
+val nntpHost = container.nntpHost   // container hostname
+val nntpPort = container.nntpPort   // mapped NNTP port (1119 inside container)
+val httpUrl  = container.httpUrl    // e.g. "http://localhost:32789"
+
+// Get a pre-configured client
+val client = container.client
+
+// Clean up
+container.stop()
+```
+
+You can also provide a custom image name:
+
+```kotlin
+val container = MockNntpServerContainer("my-registry/mock-nntp-server:v2")
+```
+
+### MockNntpClient
+
+`MockNntpClient` is an HTTP client that communicates with the mock server's REST API. It is available directly via `container.client` or can be instantiated standalone:
+
+```kotlin
+import io.skjaere.mocknntp.testcontainer.client.MockNntpClient
+
+val client = MockNntpClient("http://localhost:8081")
+
+// Add expectations (see DSL section below)
+client.addExpectation { /* ... */ }
+
+// Add a yenc body expectation directly
+client.addYencBodyExpectation(
+    articleId = "<file.part1@example.com>",
+    data = fileBytes,
+    filename = "archive.rar"
+)
+
+// Retrieve command call statistics
+val stats: Map<String, Int> = client.getStats()
+
+// Clear state
+client.clearExpectations()          // clears command-level mocks (also clears yenc mocks and stats)
+client.clearYencBodyExpectations()  // clears only yenc body mocks
+client.clearStats()                 // clears only statistics
+
+client.close()
+```
+
+### Expectation DSL
+
+The DSL provides a type-safe builder for configuring mock expectations via `addExpectation`.
+
+#### Text Response
+
+```kotlin
+client.addExpectation {
+    given {
+        command = NntpCommand.ARTICLE
+        argument = "<articleId>"  // optional
+    }
+    thenRespond {
+        withTextResponse {
+            status = 220  // default
+            body = "220 Article follows\r\nSubject: Test\r\n\r\nBody content"
+        }
+    }
+}
+```
+
+#### Binary Body Response (Base64)
+
+```kotlin
+client.addExpectation {
+    given {
+        command = NntpCommand.BODY
+    }
+    thenRespond {
+        withBinaryBodyResponse {
+            status = 222  // default
+            body = fileBytes  // ByteArray, sent as base64 over NNTP
+        }
+    }
+}
+```
+
+#### Yenc-Encoded Body Response
+
+For yenc-encoded responses keyed by article ID. The server automatically yenc-encodes the provided raw bytes. The `argument` in the `given` block is used as the article ID.
+
+```kotlin
+client.addExpectation {
+    given {
+        command = NntpCommand.BODY
+        argument = "<file.part1@example.com>"  // required for yenc
+    }
+    thenRespond {
+        withYencBodyResponse {
+            body = rawFileBytes     // ByteArray, will be yenc-encoded server-side
+            filename = "data.bin"   // optional, derived from articleId if omitted
+        }
+    }
+}
+```
+
+### Available NNTP Commands
+
+The `NntpCommand` enum defines all supported NNTP commands for the `given` block:
+
+`ARTICLE`, `BODY`, `HEAD`, `STAT`, `GROUP`, `LISTGROUP`, `LAST`, `NEXT`, `POST`, `QUIT`
+
+### Full Test Example
+
+```kotlin
+import io.skjaere.mocknntp.testcontainer.MockNntpServerContainer
+import io.skjaere.mocknntp.testcontainer.client.NntpCommand
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+
+class MyNntpIntegrationTest {
+
+    companion object {
+        val container = MockNntpServerContainer()
+
+        @BeforeAll
+        @JvmStatic
+        fun setUp() {
+            container.start()
+        }
+
+        @AfterAll
+        @JvmStatic
+        fun tearDown() {
+            container.stop()
+        }
+    }
+
+    @Test
+    fun `should return yenc-encoded body for article`() = runBlocking {
+        val client = container.client
+        val testData = "Hello, Usenet!".toByteArray()
+
+        client.addExpectation {
+            given {
+                command = NntpCommand.BODY
+                argument = "<test@example.com>"
+            }
+            thenRespond {
+                withYencBodyResponse {
+                    body = testData
+                    filename = "hello.txt"
+                }
+            }
+        }
+
+        // Connect to container.nntpHost:container.nntpPort
+        // and send: BODY <test@example.com>
+        // The response will contain yenc-encoded data with =ybegin/=yend headers
+
+        val stats = client.getStats()
+        assert(stats["BODY"] == 1)
+
+        client.clearExpectations()
+    }
+}
+```
 
 ## Technologies Used
 
@@ -176,4 +374,6 @@ The mock NNTP server listens on port `1119`. You can interact with it using a si
 *   **Ktor Framework**
 *   **Gradle**
 *   **Docker**
+*   **Testcontainers**
 *   **`kotlinx.coroutines`**
+*   **rapidyenc** (native yenc encoding via JNA)
