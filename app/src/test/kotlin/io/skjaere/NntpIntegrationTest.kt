@@ -8,8 +8,10 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
 import org.example.nntp.NntpMockResponse
+import org.example.nntp.YencBodyRequest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.BufferedReader
@@ -234,6 +236,144 @@ class NntpIntegrationTest {
         assertEquals(1, stats[testCommand.uppercase()])
     }
 
+
+    // Helper to send NNTP command and read raw response including yenc data
+    private suspend fun sendNntpCommandRaw(nntpPort: Int, command: String): String = withContext(Dispatchers.IO) {
+        var response = ""
+        Socket("localhost", nntpPort).use { socket ->
+            socket.soTimeout = 60000
+            PrintWriter(socket.getOutputStream(), true).use { writer ->
+                BufferedReader(InputStreamReader(socket.getInputStream(), Charsets.ISO_8859_1)).use { reader ->
+                    val welcomeMessage = reader.readLine()
+                    println("NNTP Client received welcome: $welcomeMessage")
+
+                    writer.println(command)
+                    var line: String?
+                    while (true) {
+                        try {
+                            line = reader.readLine()
+                            if (line == null) break
+                            response += "$line\n"
+                            if (line == ".") break
+                            if (line.startsWith("5") && line.length >= 3 && line[3] == ' ') break
+                        } catch (e: SocketTimeoutException) {
+                            println("NNTP Read Timeout for command: $command")
+                            break
+                        }
+                    }
+                }
+            }
+        }
+        response.trim()
+    }
+
+    @Test
+    fun testYencBodyResponse() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json(Json { isLenient = true; ignoreUnknownKeys = true })
+            }
+        }
+        val port = ServerSocket(0)
+        application { module(port) }
+
+        val articleId = "<test.yenc.article@example.com>"
+        val originalContent = "Hello, this is yenc test content with special chars: !@#\$%^&*()"
+        val base64Data = Base64.getEncoder().encodeToString(originalContent.toByteArray())
+
+        client.delete("/mocks")
+        client.delete("/stats")
+
+        // Add yenc body mock
+        val addResponse = client.post("/mocks/yenc-body") {
+            contentType(ContentType.Application.Json)
+            setBody(YencBodyRequest(articleId = articleId, data = base64Data, filename = "test.txt"))
+        }
+        assertEquals(HttpStatusCode.OK, addResponse.status)
+
+        // Send NNTP BODY command
+        val nntpResponse = sendNntpCommandRaw(port.localPort, "BODY $articleId")
+        println("NNTP Yenc Response:\n$nntpResponse")
+
+        // Verify 222 status line
+        assertTrue(nntpResponse.startsWith("222"))
+        // Verify yenc headers present
+        assertTrue(nntpResponse.contains("=ybegin"))
+        assertTrue(nntpResponse.contains("=yend"))
+        // Verify NNTP terminator
+        assertTrue(nntpResponse.endsWith("."))
+
+        // Verify command call count
+        val stats: Map<String, Int> = client.get("/stats").body()
+        assertEquals(1, stats["BODY"])
+    }
+
+    @Test
+    fun testYencBodyFallsBackToCommandMock() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json(Json { isLenient = true; ignoreUnknownKeys = true })
+            }
+        }
+        val port = ServerSocket(0)
+        application { module(port) }
+
+        val testCommand = "BODY"
+        val unknownArticleId = "<unknown.article@example.com>"
+        val fallbackContent = "This is fallback body content"
+        val base64Fallback = Base64.getEncoder().encodeToString(fallbackContent.toByteArray())
+
+        client.delete("/mocks")
+
+        // Add command-level BODY mock (no yenc mock for this articleId)
+        client.post("/mocks") {
+            contentType(ContentType.Application.Json)
+            setBody(NntpMockResponse(command = testCommand, binaryResponse = base64Fallback))
+        }
+
+        // Send NNTP BODY command with unknown article ID
+        val nntpResponse = sendNntpCommandRaw(port.localPort, "$testCommand $unknownArticleId")
+        println("NNTP Fallback Response:\n$nntpResponse")
+
+        // Should get the command-level mock, not a yenc response
+        assertTrue(nntpResponse.startsWith("222"))
+        assertFalse(nntpResponse.contains("=ybegin"))
+    }
+
+    @Test
+    fun testClearYencBodyMocks() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json(Json { isLenient = true; ignoreUnknownKeys = true })
+            }
+        }
+        val port = ServerSocket(0)
+        application { module(port) }
+
+        val articleId = "<clear.test@example.com>"
+        val base64Data = Base64.getEncoder().encodeToString("test data".toByteArray())
+
+        client.delete("/mocks")
+
+        // Add yenc body mock
+        client.post("/mocks/yenc-body") {
+            contentType(ContentType.Application.Json)
+            setBody(YencBodyRequest(articleId = articleId, data = base64Data))
+        }
+
+        // Verify it works
+        val response1 = sendNntpCommandRaw(port.localPort, "BODY $articleId")
+        assertTrue(response1.startsWith("222"))
+        assertTrue(response1.contains("=ybegin"))
+
+        // Clear yenc body mocks
+        val clearResponse = client.delete("/mocks/yenc-body")
+        assertEquals(HttpStatusCode.OK, clearResponse.status)
+
+        // Now the yenc mock should be gone, should get 500
+        val response2 = sendNntpCommandRaw(port.localPort, "BODY $articleId")
+        assertTrue(response2.startsWith("500"))
+    }
 
     @Test
     fun testClearStats() = testApplication {

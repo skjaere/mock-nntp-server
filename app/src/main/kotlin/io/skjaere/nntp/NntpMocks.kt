@@ -11,10 +11,18 @@ data class NntpMockResponse(
     val binaryResponse: String? = null // Base64 encoded binary content
 )
 
+@Serializable
+data class YencBodyRequest(
+    val articleId: String,
+    val data: String, // Base64 encoded binary data
+    val filename: String? = null
+)
+
 // Singleton object to manage mock NNTP responses and track command calls
 object NntpMockResponses {
     private val mocks: ConcurrentHashMap<String, NntpMockResponse> = ConcurrentHashMap()
     private val commandCalls: ConcurrentHashMap<String, Int> = ConcurrentHashMap()
+    private val yencBodyMocks: ConcurrentHashMap<String, ByteArray> = ConcurrentHashMap()
 
     fun addMockResponse(mockResponse: NntpMockResponse) {
         require(mockResponse.textResponse != null || mockResponse.binaryResponse != null) {
@@ -33,7 +41,20 @@ object NntpMockResponses {
 
     fun clearMockResponses() {
         mocks.clear()
-        commandCalls.clear() // Also clear command calls when clearing mocks
+        commandCalls.clear()
+        yencBodyMocks.clear()
+    }
+
+    fun addYencBodyMock(articleId: String, encodedData: ByteArray) {
+        yencBodyMocks[articleId] = encodedData
+    }
+
+    fun getYencBodyMock(articleId: String): ByteArray? {
+        return yencBodyMocks[articleId]
+    }
+
+    fun clearYencBodyMocks() {
+        yencBodyMocks.clear()
     }
 
     fun incrementCommandCall(command: String) {

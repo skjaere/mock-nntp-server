@@ -108,6 +108,46 @@ Use a `DELETE` request to `/stats` to reset all command call counters.
 curl -X DELETE http://localhost:8081/stats
 ```
 
+### 6. Add a Yenc-Encoded Body Response
+
+Use a `POST` request to `/mocks/yenc-body` to configure a yenc-encoded body response for a specific article ID. The binary data is provided as base64, and the server automatically yenc-encodes it. When a `BODY <articleId>` command is received over NNTP, the yenc-encoded data is returned directly.
+
+**Endpoint:** `POST /mocks/yenc-body`
+**Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "articleId": "<test.article@example.com>",
+  "data": "SGVsbG8sIFdvcmxkIQ==",
+  "filename": "hello.txt"
+}
+```
+
+- `articleId` (required): The NNTP article ID to match against.
+- `data` (required): Base64-encoded binary data to be yenc-encoded.
+- `filename` (optional): Filename for yenc headers. If omitted, derived from the article ID.
+
+**Example Request:**
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"articleId": "<test@example.com>", "data": "SGVsbG8sIFdvcmxkIQ==", "filename": "hello.txt"}' \
+  http://localhost:8081/mocks/yenc-body
+```
+
+*Note: The yenc encoding is performed automatically by the server. Article-keyed yenc mocks take priority over command-level BODY mocks.*
+
+### 7. Clear All Yenc Body Mocks
+
+Use a `DELETE` request to `/mocks/yenc-body` to remove all yenc body mocks.
+
+**Endpoint:** `DELETE /mocks/yenc-body`
+
+**Example Request:**
+```bash
+curl -X DELETE http://localhost:8081/mocks/yenc-body
+```
+
 ## NNTP Server Usage
 
 The mock NNTP server listens on port `1119`. You can interact with it using a simple `telnet` client or any NNTP client library.

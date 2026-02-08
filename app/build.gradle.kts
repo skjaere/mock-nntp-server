@@ -20,6 +20,7 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
@@ -32,6 +33,8 @@ dependencies {
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.logback.classic)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.rapidyenc.kotlin.wrapper)
+    implementation(libs.jna)
 
     testImplementation(libs.ktor.client.core)
     testImplementation(libs.ktor.client.cio)
@@ -43,7 +46,7 @@ dependencies {
 
 jib {
     from {
-        image = "eclipse-temurin:21-jre-alpine"
+        image = "eclipse-temurin:25-jre"
     }
     to {
         image = "mock-nntp-server:latest"
@@ -51,7 +54,15 @@ jib {
     container {
         mainClass = "org.example.AppKt"
         ports = listOf("8081/tcp", "1119/tcp")
-        jvmFlags = listOf("-Xms512m", "-Xmx1024m")
+        jvmFlags = listOf("-Xms512m", "-Xmx1024m", "-Djna.library.path=/app/native")
+    }
+    extraDirectories {
+        paths {
+            path {
+                setFrom(file("${rootProject.projectDir}/../yenc_kotlin_wrapper/src/main/resources/linux-x86-64"))
+                into = "/app/native"
+            }
+        }
     }
 }
 
@@ -69,8 +80,14 @@ testing {
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
+}
+
+tasks.withType<Test> {
+    val libPath = System.getenv("RAPIDYENC_LIB_PATH")
+        ?: "/home/william/IdeaProjects/rapidyenc/build"
+    systemProperty("jna.library.path", libPath)
 }
 
 application {

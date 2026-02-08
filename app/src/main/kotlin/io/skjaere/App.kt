@@ -21,53 +21,129 @@ import java.net.ServerSocket
 import java.net.Socket
 import org.example.nntp.NntpMockResponse
 import org.example.nntp.NntpMockResponses
+import org.example.nntp.YencBodyRequest
+import io.skjaere.yenc.YencEncoder
 
 val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-// Ktor Application module function
-fun Application.module(nntpPort: ServerSocket) { // Default value for standalone run
-    // Launch NNTP server within the Ktor application's lifecycle
+
+fun Application.module(nntpPort: ServerSocket) {
+    install(ContentNegotiation) {
+        json()
+    }
+
     launch {
         startNntpServer(nntpPort)
     }
+
+    routing {
+        get("/") {
+            call.respondText("Hello from Ktor!")
+        }
+
+        post("/mocks") {
+            val mockResponse = call.receive<NntpMockResponse>()
+            NntpMockResponses.addMockResponse(mockResponse)
+            call.respondText(
+                "Mock response for command '${mockResponse.command}' added/updated.",
+                status = HttpStatusCode.OK
+            )
+        }
+
+        get("/mocks") {
+            call.respond(
+                NntpMockResponses.getAllMockResponses()
+                    .mapValues { it.value.textResponse ?: it.value.binaryResponse ?: "" })
+        }
+
+        delete("/mocks") {
+            NntpMockResponses.clearMockResponses()
+            call.respondText("All mock responses cleared.", status = HttpStatusCode.OK)
+        }
+
+        get("/stats") {
+            call.respond(NntpMockResponses.getAllCommandCalls())
+        }
+
+        delete("/stats") {
+            NntpMockResponses.clearCommandCalls()
+            call.respondText("All command call statistics cleared.", status = HttpStatusCode.OK)
+        }
+
+        post("/mocks/yenc-body") {
+            val request = call.receive<YencBodyRequest>()
+            val rawData = java.util.Base64.getDecoder().decode(request.data)
+            val filename = request.filename
+                ?: request.articleId
+                    .removePrefix("<").removeSuffix(">")
+                    .replace("@", "_")
+            val yencArticle = YencEncoder.encodeSinglePart(rawData, filename)
+            NntpMockResponses.addYencBodyMock(request.articleId, yencArticle.data)
+            call.respondText(
+                "Yenc body mock for article '${request.articleId}' added.",
+                status = HttpStatusCode.OK
+            )
+        }
+
+        delete("/mocks/yenc-body") {
+            NntpMockResponses.clearYencBodyMocks()
+            call.respondText("All yenc body mocks cleared.", status = HttpStatusCode.OK)
+        }
+    }
 }
 
-// startNntpServer now returns the actual bound port
 suspend fun startNntpServer(socket: ServerSocket): Int = coroutineScope {
-    //val serverSocket = ServerSocket(port) // Dynamic NNTP port
     val nntpPort = socket.localPort
     println("NNTP Server starting on port $nntpPort...")
 
-    launch(Dispatchers.IO) { // Launch accept loop in IO dispatcher
+    launch(Dispatchers.IO) {
         while (isActive) {
             val clientSocket = socket.accept()
             println("NNTP Client connected from ${clientSocket.inetAddress.hostAddress}")
 
-            // Launch a new coroutine for each client connection
             launch(Dispatchers.IO) {
                 handleNntpClient(clientSocket)
             }
         }
     }
-    nntpPort // Return the bound port
+    nntpPort
 }
 
 fun handleNntpClient(clientSocket: Socket) {
     clientSocket.use { socket ->
         val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
         val writer = PrintWriter(socket.getOutputStream(), true)
+        val outputStream = socket.getOutputStream()
 
         // Send initial welcome message
         println("SERVER SEND: 200 service available")
         writer.println("200 service available")
 
-        var line: String? = null // Initialize line to null
+        var line: String? = null
         try {
             while (socket.isConnected && reader.readLine().also { line = it } != null) {
                 println("NNTP Client command: $line")
                 val parts = line!!.split(" ", limit = 2)
                 val command = parts[0].uppercase()
+                val argument = if (parts.size > 1) parts[1] else null
 
                 NntpMockResponses.incrementCommandCall(command)
+
+                // Check for article-keyed yenc body mock first
+                if (command == "BODY" && argument != null) {
+                    val yencData = NntpMockResponses.getYencBodyMock(argument)
+                    if (yencData != null) {
+                        val headerLine = "222 0 $argument body follows"
+                        println("SERVER SEND: $headerLine")
+                        writer.println(headerLine)
+                        writer.flush()
+
+                        // Write raw yenc bytes directly to OutputStream to avoid charset corruption
+                        outputStream.write(yencData)
+                        outputStream.write("\r\n.\r\n".toByteArray())
+                        outputStream.flush()
+                        continue
+                    }
+                }
 
                 val mockResponse = NntpMockResponses.getMockResponse(command)
 
@@ -129,42 +205,6 @@ fun main() {
     val nntpSocket = ServerSocket(1119)
     appScope.launch { startNntpServer(nntpSocket) }
     embeddedServer(Netty, port = 8081, host = "0.0.0.0") {
-        install(ContentNegotiation) {
-            json()
-        }
-        routing {
-            get("/") {
-                call.respondText("Hello from Ktor!")
-            }
-
-            post("/mocks") {
-                val mockResponse = call.receive<NntpMockResponse>()
-                NntpMockResponses.addMockResponse(mockResponse)
-                call.respondText(
-                    "Mock response for command '${mockResponse.command}' added/updated.",
-                    status = HttpStatusCode.OK
-                )
-            }
-
-            get("/mocks") {
-                call.respond(
-                    NntpMockResponses.getAllMockResponses()
-                        .mapValues { it.value.textResponse ?: it.value.binaryResponse ?: "" })
-            }
-
-            delete("/mocks") {
-                NntpMockResponses.clearMockResponses()
-                call.respondText("All mock responses cleared.", status = HttpStatusCode.OK)
-            }
-
-            get("/stats") {
-                call.respond(NntpMockResponses.getAllCommandCalls())
-            }
-
-            delete("/stats") {
-                NntpMockResponses.clearCommandCalls()
-                call.respondText("All command call statistics cleared.", status = HttpStatusCode.OK)
-            }
-        }
+        module(nntpSocket)
     }.start(wait = true)
 }
