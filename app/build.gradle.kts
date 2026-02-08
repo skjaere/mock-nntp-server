@@ -12,8 +12,8 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
-    id("io.ktor.plugin") version "2.3.12"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.20"
+    id("io.ktor.plugin") version "3.4.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
     id("com.google.cloud.tools.jib") version "3.4.0"
 }
 

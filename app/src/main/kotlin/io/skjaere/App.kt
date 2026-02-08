@@ -126,6 +126,8 @@ fun handleNntpClient(clientSocket: Socket) {
 }
 
 fun main() {
+    val nntpSocket = ServerSocket(1119)
+    appScope.launch { startNntpServer(nntpSocket) }
     embeddedServer(Netty, port = 8081, host = "0.0.0.0") {
         install(ContentNegotiation) {
             json()
@@ -164,6 +166,5 @@ fun main() {
                 call.respondText("All command call statistics cleared.", status = HttpStatusCode.OK)
             }
         }
-    }.start(wait = true) // Blocks the main thread
-    appScope.launch { startNntpServer(ServerSocket(0)) }
+    }.start(wait = true)
 }

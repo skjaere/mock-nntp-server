@@ -13,3 +13,4 @@ plugins {
 
 rootProject.name = "mock-nntp-server"
 include("app")
+include("testcontainer")
