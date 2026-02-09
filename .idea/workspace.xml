@@ -4,14 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3f07ed01-b751-4b27-a10d-7af306d653b8" name="Changes" comment="ci: forcing 0.1.0 release">
+    <list default="true" id="3f07ed01-b751-4b27-a10d-7af306d653b8" name="Changes" comment="fix: jitpack...">
       <change beforePath="$PROJECT_DIR$/.github/workflows/ci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.github/workflows/release-please.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release-please.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/io/skjaere/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/io/skjaere/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/io/skjaere/nntp/NntpMocks.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/io/skjaere/nntp/NntpMocks.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/test/kotlin/io/skjaere/NntpIntegrationTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/test/kotlin/io/skjaere/NntpIntegrationTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/io/skjaere/App.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/io/skjaere/nntp/NntpMocks.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/kotlin/io/skjaere/NntpIntegrationTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/jitpack.yml" beforeDir="false" afterPath="$PROJECT_DIR$/jitpack.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcontainer/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcontainer/build/classes/kotlin/main/io/skjaere/mocknntp/testcontainer/client/TextResponseBuilder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcontainer/build/classes/kotlin/main/io/skjaere/mocknntp/testcontainer/client/WhenBuilder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcontainer/build/classes/kotlin/main/io/skjaere/mocknntp/testcontainer/client/YencBodyResponseBuilder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcontainer/src/main/kotlin/io/skjaere/mocknntp/testcontainer/MockNntpServerContainer.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcontainer/src/main/kotlin/io/skjaere/mocknntp/testcontainer/client/ExpectationDsl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcontainer/src/main/kotlin/io/skjaere/mocknntp/testcontainer/client/MockNntpClient.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcontainer/src/main/kotlin/io/skjaere/mocknntp/testcontainer/client/NntpCommand.kt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +60,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -189,7 +200,63 @@
       <option name="project" value="LOCAL" />
       <updated>1770670553198</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="fix: fixing package names">
+      <option name="closed" value="true" />
+      <created>1770671497477</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1770671497477</updated>
+    </task>
+    <task id="LOCAL-00008" summary="fix: removing forced release version">
+      <option name="closed" value="true" />
+      <created>1770671667323</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1770671667323</updated>
+    </task>
+    <task id="LOCAL-00009" summary="fix: fixing jitpack again">
+      <option name="closed" value="true" />
+      <created>1770673108598</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1770673108598</updated>
+    </task>
+    <task id="LOCAL-00010" summary="fix: changing package names to please jitpack">
+      <option name="closed" value="true" />
+      <created>1770673665623</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1770673665623</updated>
+    </task>
+    <task id="LOCAL-00011" summary="fix: come on, jitpack!">
+      <option name="closed" value="true" />
+      <created>1770674361829</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1770674361829</updated>
+    </task>
+    <task id="LOCAL-00012" summary="fix: please, jitpack!">
+      <option name="closed" value="true" />
+      <created>1770675223306</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1770675223306</updated>
+    </task>
+    <task id="LOCAL-00013" summary="fix: jitpack...">
+      <option name="closed" value="true" />
+      <created>1770675717318</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1770675717318</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -225,7 +292,14 @@
     <MESSAGE value="ci: force refreshing dependecies" />
     <MESSAGE value="ci: trying to fix build" />
     <MESSAGE value="ci: forcing 0.1.0 release" />
-    <option name="LAST_COMMIT_MESSAGE" value="ci: forcing 0.1.0 release" />
+    <MESSAGE value="fix: fixing package names" />
+    <MESSAGE value="fix: removing forced release version" />
+    <MESSAGE value="fix: fixing jitpack again" />
+    <MESSAGE value="fix: changing package names to please jitpack" />
+    <MESSAGE value="fix: come on, jitpack!" />
+    <MESSAGE value="fix: please, jitpack!" />
+    <MESSAGE value="fix: jitpack..." />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: jitpack..." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

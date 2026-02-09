@@ -28,7 +28,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - run: ./gradlew :app:jib -Djib.to.tags=latest,${{ needs.release.outputs.version }}
+      - run: ./gradlew jib -Djib.to.tags=latest,${{ needs.release.outputs.version }}
         env:
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
