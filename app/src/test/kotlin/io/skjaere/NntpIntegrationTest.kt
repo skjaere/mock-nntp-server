@@ -1,7 +1,5 @@
 package io.skjaere
 
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -24,7 +22,6 @@ import io.ktor.server.testing.* // Import for testApplication
 import kotlinx.serialization.json.Json // Explicitly import Json
 import io.ktor.client.call.body // Explicitly import body
 import io.ktor.serialization.kotlinx.json.json // Explicitly import json for ContentNegotiation
-import org.example.module
 import java.net.ServerSocket
 import java.net.SocketTimeoutException
 

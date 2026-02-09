@@ -9,7 +9,7 @@ kotlinx-coroutines = "1.8.1"
 kotlinx-serialization = "1.8.1"
 testcontainers = "2.0.3"
 jna = "5.17.0"
-rapidyenc-kotlin-wrapper = "v0.1.1"
+rapidyenc-kotlin-wrapper = "v0.1.2"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }

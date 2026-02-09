@@ -1,4 +1,4 @@
-package org.example
+package io.skjaere
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -8,7 +8,6 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
@@ -24,6 +23,7 @@ import org.example.nntp.NntpMockResponses
 import org.example.nntp.RawYencBodyRequest
 import org.example.nntp.YencBodyRequest
 import io.skjaere.yenc.YencEncoder
+import java.util.Base64
 
 val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -72,7 +72,7 @@ fun Application.module(nntpPort: ServerSocket) {
 
         post("/mocks/yenc-body") {
             val request = call.receive<YencBodyRequest>()
-            val rawData = java.util.Base64.getDecoder().decode(request.data)
+            val rawData = Base64.getDecoder().decode(request.data)
             val filename = request.filename
                 ?: request.articleId
                     .removePrefix("<").removeSuffix(">")
@@ -87,7 +87,7 @@ fun Application.module(nntpPort: ServerSocket) {
 
         post("/mocks/yenc-body/raw") {
             val request = call.receive<RawYencBodyRequest>()
-            val rawYencData = java.util.Base64.getDecoder().decode(request.data)
+            val rawYencData = Base64.getDecoder().decode(request.data)
             NntpMockResponses.addYencBodyMock(request.articleId, rawYencData)
             call.respondText(
                 "Raw yenc body mock for article '${request.articleId}' added.",
