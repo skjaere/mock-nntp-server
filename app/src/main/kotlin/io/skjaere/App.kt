@@ -18,10 +18,10 @@ import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
-import org.example.nntp.NntpMockResponse
-import org.example.nntp.NntpMockResponses
-import org.example.nntp.RawYencBodyRequest
-import org.example.nntp.YencBodyRequest
+import io.skjaere.nntp.NntpMockResponse
+import io.skjaere.nntp.NntpMockResponses
+import io.skjaere.nntp.RawYencBodyRequest
+import io.skjaere.nntp.YencBodyRequest
 import io.skjaere.yenc.YencEncoder
 import java.util.Base64
 

@@ -1,4 +1,4 @@
-package org.example.nntp
+package io.skjaere.nntp
 
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.serialization.Serializable

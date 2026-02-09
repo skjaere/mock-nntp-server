@@ -5,8 +5,8 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
-import org.example.nntp.NntpMockResponse
-import org.example.nntp.YencBodyRequest
+import io.skjaere.nntp.NntpMockResponse
+import io.skjaere.nntp.YencBodyRequest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertFalse

@@ -53,7 +53,7 @@ jib {
         }
     }
     container {
-        mainClass = "org.example.AppKt"
+        mainClass = "io.skjaere.AppKt"
         ports = listOf("8081/tcp", "1119/tcp")
         jvmFlags = listOf("-Xms512m", "-Xmx1024m")
     }
@@ -85,5 +85,5 @@ tasks.withType<Test> {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.AppKt"
+    mainClass = "io.skjaere.AppKt"
 }
