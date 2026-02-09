@@ -2,4 +2,4 @@ before_install:
   - sdk install java 25-tem
   - sdk use java 25-tem
 install:
-  - ./gradlew publishToMavenLocal -x test
+  - ./gradlew publishToMavenLocal -x test -Pversion=$VERSION
