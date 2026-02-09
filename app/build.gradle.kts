@@ -8,10 +8,10 @@
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlinx.kover)
     application
     id("io.ktor.plugin") version "3.4.0"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
     id("com.google.cloud.tools.jib") version "3.4.0"
 }
 
