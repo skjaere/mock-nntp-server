@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/skjaere/mock-nntp-server/compare/v0.1.2...v0.1.3) (2026-02-09)
+
+
+### Bug Fixes
+
+* fixing jitpack again ([04fd487](https://github.com/skjaere/mock-nntp-server/commit/04fd487d2d6e50162054fc493b2b2f235cae7264))
+
 ## [0.1.2](https://github.com/skjaere/mock-nntp-server/compare/v0.1.1...v0.1.2) (2026-02-09)
 
 
