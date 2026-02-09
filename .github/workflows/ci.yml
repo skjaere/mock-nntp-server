@@ -19,7 +19,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - run: ./gradlew build koverXmlReport --refresh-dependencies
+      - run: ./gradlew build koverXmlReport
 
       - uses: codecov/codecov-action@v5
         with:
