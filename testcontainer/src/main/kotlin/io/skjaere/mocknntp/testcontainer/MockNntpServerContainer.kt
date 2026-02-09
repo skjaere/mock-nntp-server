@@ -4,7 +4,7 @@ import io.skjaere.mocknntp.testcontainer.client.MockNntpClient
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 
-class MockNntpServerContainer(image: String = "mock-nntp-server:latest") :
+class MockNntpServerContainer(image: String = "ghcr.io/skjaere/mock-nntp-server:latest") :
     GenericContainer<MockNntpServerContainer>(image) {
 
     companion object {

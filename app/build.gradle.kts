@@ -46,20 +46,16 @@ jib {
         image = "eclipse-temurin:25-jre"
     }
     to {
-        image = "mock-nntp-server:latest"
+        image = "ghcr.io/skjaere/mock-nntp-server:latest"
+        auth {
+            username = System.getenv("DOCKER_USERNAME") ?: ""
+            password = System.getenv("DOCKER_PASSWORD") ?: ""
+        }
     }
     container {
         mainClass = "org.example.AppKt"
         ports = listOf("8081/tcp", "1119/tcp")
-        jvmFlags = listOf("-Xms512m", "-Xmx1024m", "-Djna.library.path=/app/native")
-    }
-    extraDirectories {
-        paths {
-            path {
-                setFrom(file("${rootProject.projectDir}/../../yenc_kotlin_wrapper/src/main/resources/linux-x86-64"))
-                into = "/app/native"
-            }
-        }
+        jvmFlags = listOf("-Xms512m", "-Xmx1024m")
     }
 }
 
