@@ -1,5 +1,8 @@
 # Mock NNTP Server
 
+[![CI](https://github.com/skjaere/mock-nntp-server/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/skjaere/mock-nntp-server/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/skjaere/mock-nntp-server/branch/main/graph/badge.svg)](https://codecov.io/gh/skjaere/mock-nntp-server)
+
 A mock NNTP (Network News Transfer Protocol) server built with Kotlin and Ktor, designed to simulate NNTP responses and track command usage. This project provides HTTP REST endpoints to configure mock NNTP responses and retrieve statistics about NNTP commands received.
 
 ## Features

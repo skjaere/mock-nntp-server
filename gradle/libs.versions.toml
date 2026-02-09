@@ -9,7 +9,7 @@ kotlinx-coroutines = "1.8.1"
 kotlinx-serialization = "1.8.1"
 testcontainers = "2.0.3"
 jna = "5.17.0"
-rapidyenc-kotlin-wrapper = "0.1.0"
+rapidyenc-kotlin-wrapper = "v0.1.1"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -27,8 +27,9 @@ ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
-rapidyenc-kotlin-wrapper = { module = "io.skjaere:rapidyenc-kotlin-wrapper", version.ref = "rapidyenc-kotlin-wrapper" }
+rapidyenc-kotlin-wrapper = { module = "com.github.skjaere:rapidyenc-kotlin-wrapper", version.ref = "rapidyenc-kotlin-wrapper" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.0" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.3.0" }
+kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version = "0.9.1" }
