@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/skjaere/mock-nntp-server/compare/v0.1.7...v0.1.8) (2026-02-09)
+
+
+### Bug Fixes
+
+* merging everything into a single app ([72d354d](https://github.com/skjaere/mock-nntp-server/commit/72d354da756ff0ebcca9d23d80f50009d5f86e08))
+
 ## [0.1.7](https://github.com/skjaere/mock-nntp-server/compare/v0.1.6...v0.1.7) (2026-02-09)
 
 
