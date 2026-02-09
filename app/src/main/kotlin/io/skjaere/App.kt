@@ -21,6 +21,7 @@ import java.net.ServerSocket
 import java.net.Socket
 import org.example.nntp.NntpMockResponse
 import org.example.nntp.NntpMockResponses
+import org.example.nntp.RawYencBodyRequest
 import org.example.nntp.YencBodyRequest
 import io.skjaere.yenc.YencEncoder
 
@@ -80,6 +81,16 @@ fun Application.module(nntpPort: ServerSocket) {
             NntpMockResponses.addYencBodyMock(request.articleId, yencArticle.data)
             call.respondText(
                 "Yenc body mock for article '${request.articleId}' added.",
+                status = HttpStatusCode.OK
+            )
+        }
+
+        post("/mocks/yenc-body/raw") {
+            val request = call.receive<RawYencBodyRequest>()
+            val rawYencData = java.util.Base64.getDecoder().decode(request.data)
+            NntpMockResponses.addYencBodyMock(request.articleId, rawYencData)
+            call.respondText(
+                "Raw yenc body mock for article '${request.articleId}' added.",
                 status = HttpStatusCode.OK
             )
         }

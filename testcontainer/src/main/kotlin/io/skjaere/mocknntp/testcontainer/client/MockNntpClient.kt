@@ -55,6 +55,17 @@ class MockNntpClient(private val baseUrl: String) : AutoCloseable {
         }
     }
 
+    suspend fun addRawYencBodyExpectation(articleId: String, rawYencData: ByteArray) {
+        val requestBody = RawYencBodyMockRequest(
+            articleId = articleId,
+            data = Base64.getEncoder().encodeToString(rawYencData)
+        )
+        httpClient.post("$baseUrl/mocks/yenc-body/raw") {
+            contentType(ContentType.Application.Json)
+            setBody(requestBody)
+        }
+    }
+
     suspend fun clearYencBodyExpectations() {
         httpClient.delete("$baseUrl/mocks/yenc-body")
     }
@@ -87,5 +98,11 @@ class MockNntpClient(private val baseUrl: String) : AutoCloseable {
         val articleId: String,
         val data: String,
         val filename: String? = null
+    )
+
+    @Serializable
+    private data class RawYencBodyMockRequest(
+        val articleId: String,
+        val data: String
     )
 }

@@ -59,7 +59,7 @@ jib {
     extraDirectories {
         paths {
             path {
-                setFrom(file("${rootProject.projectDir}/../yenc_kotlin_wrapper/src/main/resources/linux-x86-64"))
+                setFrom(file("${rootProject.projectDir}/../../yenc_kotlin_wrapper/src/main/resources/linux-x86-64"))
                 into = "/app/native"
             }
         }

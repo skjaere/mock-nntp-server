@@ -16,9 +16,9 @@ This project uses [Jib](https://github.com/GoogleContainerTools/jib) to build op
 1.  **Build the Docker image with Jib:**
     Navigate to the project root directory and run:
     ```bash
-    ./gradlew jibDockerBuild
+    ./gradlew :app:jibDockerBuild --no-configuration-cache
     ```
-    This command builds the Docker image and pushes it to your local Docker daemon.
+    This command builds the Docker image and loads it into your local Docker daemon.
 
 2.  **Run the Docker container:**
     This will start the Ktor HTTP server on port `8081` and the mock NNTP server on port `1119`.
@@ -137,7 +137,34 @@ curl -X POST -H "Content-Type: application/json" \
 
 *Note: The yenc encoding is performed automatically by the server. Article-keyed yenc mocks take priority over command-level BODY mocks.*
 
-### 7. Clear All Yenc Body Mocks
+### 7. Add a Raw (Pre-Encoded) Yenc Body Response
+
+Use a `POST` request to `/mocks/yenc-body/raw` to provide pre-encoded yenc bytes for a specific article ID. Unlike `/mocks/yenc-body`, this endpoint stores the data as-is without any encoding — use this when you need full control over the yenc format (e.g. multipart articles with `=ypart` headers).
+
+**Endpoint:** `POST /mocks/yenc-body/raw`
+**Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "articleId": "<part2@example.com>",
+  "data": "PBase64-encoded raw yenc bytes including =ybegin, encoded data, and =yend>"
+}
+```
+
+- `articleId` (required): The NNTP article ID to match against.
+- `data` (required): Base64-encoded pre-built yenc data (including `=ybegin`, encoded content, and `=yend` lines).
+
+**Example Request:**
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"articleId": "<part2@example.com>", "data": "PXliZWdpbiBwYXJ0PTIgdG90YWw9MyBsaW5lPTEyOCBzaXplPTMwMDAgbmFtZT1hcmNoaXZlLnJhcg0K..."}' \
+  http://localhost:8081/mocks/yenc-body/raw
+```
+
+*Note: Raw yenc mocks are stored alongside auto-encoded yenc mocks and follow the same lookup priority.*
+
+### 8. Clear All Yenc Body Mocks
 
 Use a `DELETE` request to `/mocks/yenc-body` to remove all yenc body mocks.
 
@@ -186,9 +213,20 @@ Add the testcontainer module to your project:
 
 ```kotlin
 // build.gradle.kts
-dependencies {
-    testImplementation("io.skjaere:mock-nntp-server-testcontainer:<version>")
+repositories {
+    mavenLocal()
 }
+
+dependencies {
+    testImplementation("io.skjaere.mocknntp:testcontainer:0.1.0")
+    testImplementation("org.testcontainers:testcontainers:2.0.3")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.3")
+}
+```
+
+Publish to mavenLocal first (from the mock-nntp-server project root):
+```bash
+./gradlew :testcontainer:publishToMavenLocal
 ```
 
 ### MockNntpServerContainer
@@ -231,11 +269,17 @@ val client = MockNntpClient("http://localhost:8081")
 // Add expectations (see DSL section below)
 client.addExpectation { /* ... */ }
 
-// Add a yenc body expectation directly
+// Add a yenc body expectation (server auto-encodes the raw bytes)
 client.addYencBodyExpectation(
     articleId = "<file.part1@example.com>",
     data = fileBytes,
     filename = "archive.rar"
+)
+
+// Add a raw yenc body expectation (pre-encoded, for multipart or custom yenc formats)
+client.addRawYencBodyExpectation(
+    articleId = "<file.part2@example.com>",
+    rawYencData = preBuiltYencBytes
 )
 
 // Retrieve command call statistics
@@ -316,26 +360,18 @@ The `NntpCommand` enum defines all supported NNTP commands for the `given` block
 ```kotlin
 import io.skjaere.mocknntp.testcontainer.MockNntpServerContainer
 import io.skjaere.mocknntp.testcontainer.client.NntpCommand
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 
+@Testcontainers
 class MyNntpIntegrationTest {
 
     companion object {
+        @Container
+        @JvmStatic
         val container = MockNntpServerContainer()
-
-        @BeforeAll
-        @JvmStatic
-        fun setUp() {
-            container.start()
-        }
-
-        @AfterAll
-        @JvmStatic
-        fun tearDown() {
-            container.stop()
-        }
     }
 
     @Test
@@ -374,6 +410,6 @@ class MyNntpIntegrationTest {
 *   **Ktor Framework**
 *   **Gradle**
 *   **Docker**
-*   **Testcontainers**
+*   **Testcontainers 2.x**
 *   **`kotlinx.coroutines`**
 *   **rapidyenc** (native yenc encoding via JNA)

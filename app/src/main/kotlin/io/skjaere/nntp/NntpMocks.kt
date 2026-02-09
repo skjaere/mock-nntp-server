@@ -18,6 +18,12 @@ data class YencBodyRequest(
     val filename: String? = null
 )
 
+@Serializable
+data class RawYencBodyRequest(
+    val articleId: String,
+    val data: String // Base64 encoded pre-built yenc data (=ybegin ... =yend)
+)
+
 // Singleton object to manage mock NNTP responses and track command calls
 object NntpMockResponses {
     private val mocks: ConcurrentHashMap<String, NntpMockResponse> = ConcurrentHashMap()
