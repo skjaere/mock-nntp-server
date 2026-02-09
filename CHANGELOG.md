@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/skjaere/mock-nntp-server/compare/v0.1.3...v0.1.4) (2026-02-09)
+
+
+### Bug Fixes
+
+* changing package names to please jitpack ([ec6b451](https://github.com/skjaere/mock-nntp-server/commit/ec6b451c37598e160c961c12575686c193997dd1))
+
 ## [0.1.3](https://github.com/skjaere/mock-nntp-server/compare/v0.1.2...v0.1.3) (2026-02-09)
 
 
