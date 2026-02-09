@@ -3,4 +3,3 @@ before_install:
   - sdk use java 25-tem
 install:
   - ./gradlew publishToMavenLocal -x test
-group: io.skjaere.mocknntp
