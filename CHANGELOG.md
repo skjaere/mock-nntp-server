@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/skjaere/mock-nntp-server/compare/v0.1.0...v0.1.1) (2026-02-09)
+
+
+### Bug Fixes
+
+* fixing package names ([c7537fe](https://github.com/skjaere/mock-nntp-server/commit/c7537fe020a9f5bfa37a701a925abbc14ae66fe6))
+* removing forced release version ([0eefd76](https://github.com/skjaere/mock-nntp-server/commit/0eefd76b25ec82663c970152d7ff359fda65888a))
+
 ## 0.1.0 (2026-02-09)
 
 
