@@ -2,234 +2,36 @@
 
 [![CI](https://github.com/skjaere/mock-nntp-server/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/skjaere/mock-nntp-server/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/skjaere/mock-nntp-server/branch/main/graph/badge.svg)](https://codecov.io/gh/skjaere/mock-nntp-server)
+[![](https://jitpack.io/v/skjaere/mock-nntp-server.svg)](https://jitpack.io/#skjaere/mock-nntp-server)
 
-A mock NNTP (Network News Transfer Protocol) server built with Kotlin and Ktor, designed to simulate NNTP responses and track command usage. This project provides HTTP REST endpoints to configure mock NNTP responses and retrieve statistics about NNTP commands received.
+A mock NNTP (Network News Transfer Protocol) server built with Kotlin and Ktor, designed to simulate NNTP responses and track command usage. Includes a Testcontainers wrapper and Kotlin client DSL for use in integration tests.
 
 ## Features
 
 -   **Kotlin & Ktor:** Developed using Kotlin and the Ktor asynchronous framework.
 -   **Configurable Mock Responses:** HTTP REST endpoints to add, retrieve, and clear mock responses for specific NNTP commands.
 -   **Command Call Statistics:** HTTP REST endpoints to track and retrieve how many times each NNTP command has been called.
--   **Dockerized:** Easily deployable as a Docker container.
+-   **Yenc Support:** Automatic yenc encoding via [rapidyenc](https://github.com/skjaere/rapidyenc-kotlin-wrapper), or provide pre-encoded yenc data for full control.
+-   **Testcontainers Integration:** Built-in `MockNntpServerContainer` and client DSL for easy use in JUnit 5 integration tests.
+-   **Docker:** Published to `ghcr.io/skjaere/mock-nntp-server`.
 
-## How to Run with Docker
-
-This project uses [Jib](https://github.com/GoogleContainerTools/jib) to build optimized Docker images without a Docker daemon.
-
-1.  **Build the Docker image with Jib:**
-    Navigate to the project root directory and run:
-    ```bash
-    ./gradlew :app:jibDockerBuild --no-configuration-cache
-    ```
-    This command builds the Docker image and loads it into your local Docker daemon.
-
-2.  **Run the Docker container:**
-    This will start the Ktor HTTP server on port `8081` and the mock NNTP server on port `1119`.
-    ```bash
-    docker run -p 8081:8081 -p 1119:1119 mock-nntp-server:latest
-    ```
-    The server will start, and you will see logs in your terminal, including messages like "NNTP Server starting on port 1119...".
-
-## Ktor REST API Usage
-
-The Ktor HTTP server runs on `http://localhost:8081`.
-
-### 1. Add/Update a Mock NNTP Response
-
-Use a `POST` request to `/mocks` to configure what response the mock NNTP server should send for a given command.
-
-**Endpoint:** `POST /mocks`
-**Content-Type:** `application/json`
-
-**Example Request:**
-```bash
-curl -X POST -H "Content-Type: application/json" -d '{"command": "ARTICLE", "response": "220 Article retrieved, body follows (text/plain)
-This is a mocked article content.
-."}' http://localhost:8081/mocks
-```
-*Note: NNTP responses often require `
-` for line endings, and `.` on a line by itself to signify the end of the multiline response.*
-
-### 2. Retrieve All Mock NNTP Responses
-
-Use a `GET` request to `/mocks` to see all configured mock responses.
-
-**Endpoint:** `GET /mocks`
-
-**Example Request:**
-```bash
-curl http://localhost:8081/mocks
-```
-
-**Example Response:**
-```json
-{
-  "ARTICLE": "220 Article retrieved, body follows (text/plain)
-This is a mocked article content.
-."
-}
-```
-
-### 3. Clear All Mock NNTP Responses
-
-Use a `DELETE` request to `/mocks` to remove all configured mock responses.
-
-**Endpoint:** `DELETE /mocks`
-
-**Example Request:**
-```bash
-curl -X DELETE http://localhost:8081/mocks
-```
-
-### 4. Retrieve NNTP Command Call Statistics
-
-Use a `GET` request to `/stats` to see how many times each NNTP command has been called.
-
-**Endpoint:** `GET /stats`
-
-**Example Request:**
-```bash
-curl http://localhost:8081/stats
-```
-
-**Example Response (after some NNTP interaction):**
-```json
-{
-  "ARTICLE": 5,
-  "GROUP": 2
-}
-```
-
-### 5. Clear NNTP Command Call Statistics
-
-Use a `DELETE` request to `/stats` to reset all command call counters.
-
-**Endpoint:** `DELETE /stats`
-
-**Example Request:**
-```bash
-curl -X DELETE http://localhost:8081/stats
-```
-
-### 6. Add a Yenc-Encoded Body Response
-
-Use a `POST` request to `/mocks/yenc-body` to configure a yenc-encoded body response for a specific article ID. The binary data is provided as base64, and the server automatically yenc-encodes it. When a `BODY <articleId>` command is received over NNTP, the yenc-encoded data is returned directly.
-
-**Endpoint:** `POST /mocks/yenc-body`
-**Content-Type:** `application/json`
-
-**Request Body:**
-```json
-{
-  "articleId": "<test.article@example.com>",
-  "data": "SGVsbG8sIFdvcmxkIQ==",
-  "filename": "hello.txt"
-}
-```
-
-- `articleId` (required): The NNTP article ID to match against.
-- `data` (required): Base64-encoded binary data to be yenc-encoded.
-- `filename` (optional): Filename for yenc headers. If omitted, derived from the article ID.
-
-**Example Request:**
-```bash
-curl -X POST -H "Content-Type: application/json" \
-  -d '{"articleId": "<test@example.com>", "data": "SGVsbG8sIFdvcmxkIQ==", "filename": "hello.txt"}' \
-  http://localhost:8081/mocks/yenc-body
-```
-
-*Note: The yenc encoding is performed automatically by the server. Article-keyed yenc mocks take priority over command-level BODY mocks.*
-
-### 7. Add a Raw (Pre-Encoded) Yenc Body Response
-
-Use a `POST` request to `/mocks/yenc-body/raw` to provide pre-encoded yenc bytes for a specific article ID. Unlike `/mocks/yenc-body`, this endpoint stores the data as-is without any encoding — use this when you need full control over the yenc format (e.g. multipart articles with `=ypart` headers).
-
-**Endpoint:** `POST /mocks/yenc-body/raw`
-**Content-Type:** `application/json`
-
-**Request Body:**
-```json
-{
-  "articleId": "<part2@example.com>",
-  "data": "PBase64-encoded raw yenc bytes including =ybegin, encoded data, and =yend>"
-}
-```
-
-- `articleId` (required): The NNTP article ID to match against.
-- `data` (required): Base64-encoded pre-built yenc data (including `=ybegin`, encoded content, and `=yend` lines).
-
-**Example Request:**
-```bash
-curl -X POST -H "Content-Type: application/json" \
-  -d '{"articleId": "<part2@example.com>", "data": "PXliZWdpbiBwYXJ0PTIgdG90YWw9MyBsaW5lPTEyOCBzaXplPTMwMDAgbmFtZT1hcmNoaXZlLnJhcg0K..."}' \
-  http://localhost:8081/mocks/yenc-body/raw
-```
-
-*Note: Raw yenc mocks are stored alongside auto-encoded yenc mocks and follow the same lookup priority.*
-
-### 8. Clear All Yenc Body Mocks
-
-Use a `DELETE` request to `/mocks/yenc-body` to remove all yenc body mocks.
-
-**Endpoint:** `DELETE /mocks/yenc-body`
-
-**Example Request:**
-```bash
-curl -X DELETE http://localhost:8081/mocks/yenc-body
-```
-
-## NNTP Server Usage
-
-The mock NNTP server listens on port `1119`. You can interact with it using a simple `telnet` client or any NNTP client library.
-
-1.  **Connect to the NNTP server:**
-    ```bash
-    telnet localhost 1119
-    ```
-    *(You might need to install `telnet` if it's not available on your system.)*
-
-2.  **Send an NNTP command:**
-    After connecting, type an NNTP command (e.g., `ARTICLE <message-id>`) and press Enter. If a mock response is configured for that command, the server will send it back.
-
-    Example interaction:
-    ```
-    # (after connecting with telnet)
-    ARTICLE 12345
-    # (server responds with the configured mock response for ARTICLE)
-    ```
-
-### NNTP Response Lookup Order
-
-When the server receives an NNTP command, it resolves the response in this order:
-
-1. **Article-keyed yenc body mock** — If the command is `BODY` and an article ID is provided, the server checks for a yenc body mock matching that exact article ID.
-2. **Command-level mock** — Falls back to the command-keyed mock (e.g., all `BODY` commands return the same response).
-3. **500 error** — If no mock is configured, responds with `500 Command not recognized`.
-
-## Testcontainer Module
-
-The `testcontainer` module provides a Testcontainers wrapper and a Kotlin client DSL for use in integration tests. It is published as a Maven artifact and can be added as a test dependency.
+## Using in Tests
 
 ### Dependency
 
-Add the testcontainer module to your project:
+Add the dependency via [JitPack](https://jitpack.io/#skjaere/mock-nntp-server):
 
 ```kotlin
 // build.gradle.kts
 repositories {
-    mavenLocal()
+    maven("https://jitpack.io")
 }
 
 dependencies {
-    testImplementation("io.skjaere.mocknntp:testcontainer:0.1.0")
+    testImplementation("com.github.skjaere:mock-nntp-server:v0.1.0")
     testImplementation("org.testcontainers:testcontainers:2.0.3")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.3")
 }
-```
-
-Publish to mavenLocal first (from the mock-nntp-server project root):
-```bash
-./gradlew :testcontainer:publishToMavenLocal
 ```
 
 ### MockNntpServerContainer
@@ -239,7 +41,7 @@ Publish to mavenLocal first (from the mock-nntp-server project root):
 ```kotlin
 import io.skjaere.mocknntp.testcontainer.MockNntpServerContainer
 
-val container = MockNntpServerContainer() // defaults to "mock-nntp-server:latest"
+val container = MockNntpServerContainer() // defaults to "ghcr.io/skjaere/mock-nntp-server:latest"
 container.start()
 
 // Access mapped ports
@@ -407,12 +209,59 @@ class MyNntpIntegrationTest {
 }
 ```
 
+## Running Standalone
+
+### Docker
+
+The Docker image is published to GitHub Container Registry:
+
+```bash
+docker run -p 8081:8081 -p 1119:1119 ghcr.io/skjaere/mock-nntp-server:latest
+```
+
+### Building Locally
+
+```bash
+./gradlew jibDockerBuild
+docker run -p 8081:8081 -p 1119:1119 ghcr.io/skjaere/mock-nntp-server:latest
+```
+
+The Ktor HTTP server runs on port `8081` and the mock NNTP server on port `1119`.
+
+## REST API
+
+### Mocks
+
+| Method   | Endpoint             | Description                                   |
+|----------|----------------------|-----------------------------------------------|
+| `POST`   | `/mocks`             | Add/update a mock response for an NNTP command |
+| `GET`    | `/mocks`             | List all configured mock responses             |
+| `DELETE` | `/mocks`             | Clear all mock responses                       |
+| `POST`   | `/mocks/yenc-body`   | Add a yenc body mock (auto-encoded)            |
+| `POST`   | `/mocks/yenc-body/raw` | Add a raw yenc body mock (pre-encoded)       |
+| `DELETE` | `/mocks/yenc-body`   | Clear all yenc body mocks                      |
+
+### Statistics
+
+| Method   | Endpoint  | Description                        |
+|----------|-----------|------------------------------------|
+| `GET`    | `/stats`  | Get command call counts            |
+| `DELETE` | `/stats`  | Clear command call statistics      |
+
+### NNTP Response Lookup Order
+
+When the server receives an NNTP command, it resolves the response in this order:
+
+1. **Article-keyed yenc body mock** -- If the command is `BODY` and an article ID is provided, the server checks for a yenc body mock matching that exact article ID.
+2. **Command-level mock** -- Falls back to the command-keyed mock (e.g., all `BODY` commands return the same response).
+3. **500 error** -- If no mock is configured, responds with `500 Command not recognized`.
+
 ## Technologies Used
 
 *   **Kotlin**
 *   **Ktor Framework**
 *   **Gradle**
-*   **Docker**
+*   **Docker / Jib**
 *   **Testcontainers 2.x**
 *   **`kotlinx.coroutines`**
 *   **rapidyenc** (native yenc encoding via JNA)
