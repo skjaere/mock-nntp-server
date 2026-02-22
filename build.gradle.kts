@@ -10,6 +10,7 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://jitpack.io")
 }
@@ -25,6 +26,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.rapidyenc.kotlin.wrapper)
     implementation(libs.jna)
+
+    // Archive generation for test helpers
+    api("io.skjaere:kotlin-compression-utils:0.1.0")
 
     // Testcontainer client dependencies
     api(libs.testcontainers)
