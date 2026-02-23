@@ -21,6 +21,7 @@ import java.net.Socket
 import io.skjaere.nntp.NntpMockResponse
 import io.skjaere.nntp.NntpMockResponses
 import io.skjaere.nntp.RawYencBodyRequest
+import io.skjaere.nntp.StatMockRequest
 import io.skjaere.nntp.YencBodyRequest
 import io.skjaere.yenc.YencEncoder
 import java.util.Base64
@@ -99,6 +100,20 @@ fun Application.module(nntpPort: ServerSocket) {
             NntpMockResponses.clearYencBodyMocks()
             call.respondText("All yenc body mocks cleared.", status = HttpStatusCode.OK)
         }
+
+        post("/mocks/stat") {
+            val request = call.receive<StatMockRequest>()
+            NntpMockResponses.addStatMock(request.articleId, request.exists)
+            call.respondText(
+                "Stat mock for article '${request.articleId}' added (exists=${request.exists}).",
+                status = HttpStatusCode.OK
+            )
+        }
+
+        delete("/mocks/stat") {
+            NntpMockResponses.clearStatMocks()
+            call.respondText("All stat mocks cleared.", status = HttpStatusCode.OK)
+        }
     }
 }
 
@@ -138,6 +153,30 @@ fun handleNntpClient(clientSocket: Socket) {
                 val argument = if (parts.size > 1) parts[1] else null
 
                 NntpMockResponses.incrementCommandCall(command)
+
+                // Check for STAT mocks (single-line response)
+                if (command == "STAT" && argument != null) {
+                    val statMock = NntpMockResponses.getStatMock(argument)
+                    if (statMock != null) {
+                        if (statMock) {
+                            val responseLine = "223 0 $argument article exists"
+                            println("SERVER SEND: $responseLine")
+                            writer.println(responseLine)
+                        } else {
+                            val responseLine = "430 No Such Article Found"
+                            println("SERVER SEND: $responseLine")
+                            writer.println(responseLine)
+                        }
+                        continue
+                    }
+                    // Fall through: if a yenc body mock exists for this article, treat as found
+                    if (NntpMockResponses.getYencBodyMock(argument) != null) {
+                        val responseLine = "223 0 $argument article exists"
+                        println("SERVER SEND: $responseLine")
+                        writer.println(responseLine)
+                        continue
+                    }
+                }
 
                 // Check for article-keyed yenc body mock first
                 if (command == "BODY" && argument != null) {

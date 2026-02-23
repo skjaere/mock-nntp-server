@@ -83,6 +83,18 @@ class MockNntpClient(private val baseUrl: String) : AutoCloseable {
         httpClient.delete("$baseUrl/mocks/yenc-body")
     }
 
+    suspend fun addStatExpectation(articleId: String, exists: Boolean) {
+        val requestBody = StatMockRequestDto(articleId = articleId, exists = exists)
+        httpClient.post("$baseUrl/mocks/stat") {
+            contentType(ContentType.Application.Json)
+            setBody(requestBody)
+        }
+    }
+
+    suspend fun clearStatExpectations() {
+        httpClient.delete("$baseUrl/mocks/stat")
+    }
+
     suspend fun clearExpectations() {
         httpClient.delete("$baseUrl/mocks")
     }
@@ -168,5 +180,11 @@ class MockNntpClient(private val baseUrl: String) : AutoCloseable {
     private data class RawYencBodyMockRequest(
         val articleId: String,
         val data: String
+    )
+
+    @Serializable
+    private data class StatMockRequestDto(
+        val articleId: String,
+        val exists: Boolean
     )
 }

@@ -24,11 +24,18 @@ data class RawYencBodyRequest(
     val data: String // Base64 encoded pre-built yenc data (=ybegin ... =yend)
 )
 
+@Serializable
+data class StatMockRequest(
+    val articleId: String,
+    val exists: Boolean
+)
+
 // Singleton object to manage mock NNTP responses and track command calls
 object NntpMockResponses {
     private val mocks: ConcurrentHashMap<String, NntpMockResponse> = ConcurrentHashMap()
     private val commandCalls: ConcurrentHashMap<String, Int> = ConcurrentHashMap()
     private val yencBodyMocks: ConcurrentHashMap<String, ByteArray> = ConcurrentHashMap()
+    private val statMocks: ConcurrentHashMap<String, Boolean> = ConcurrentHashMap()
 
     fun addMockResponse(mockResponse: NntpMockResponse) {
         require(mockResponse.textResponse != null || mockResponse.binaryResponse != null) {
@@ -49,6 +56,7 @@ object NntpMockResponses {
         mocks.clear()
         commandCalls.clear()
         yencBodyMocks.clear()
+        statMocks.clear()
     }
 
     fun addYencBodyMock(articleId: String, encodedData: ByteArray) {
@@ -61,6 +69,18 @@ object NntpMockResponses {
 
     fun clearYencBodyMocks() {
         yencBodyMocks.clear()
+    }
+
+    fun addStatMock(articleId: String, exists: Boolean) {
+        statMocks[articleId] = exists
+    }
+
+    fun getStatMock(articleId: String): Boolean? {
+        return statMocks[articleId]
+    }
+
+    fun clearStatMocks() {
+        statMocks.clear()
     }
 
     fun incrementCommandCall(command: String) {
