@@ -139,11 +139,10 @@ class MockNntpClient(private val baseUrl: String) : AutoCloseable {
             nzbFiles.append("    </segments>\n")
             nzbFiles.append("  </file>\n")
         }
-        return """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <!DOCTYPE nzb PUBLIC "-//newzBin//DTD NZB 1.1//EN" "http://www.newzbin.com/DTD/nzb/nzb-1.1.dtd">
-            <nzb xmlns="http://www.newzbin.com/DTD/2003/nzb">$nzbFiles</nzb>
-        """
+        return """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nzb PUBLIC "-//newzBin//DTD NZB 1.1//EN" "http://www.newzbin.com/DTD/nzb/nzb-1.1.dtd">
+<nzb xmlns="http://www.newzbin.com/DTD/2003/nzb">
+$nzbFiles</nzb>"""
     }
 
     suspend fun prepareArchiveNzb(
