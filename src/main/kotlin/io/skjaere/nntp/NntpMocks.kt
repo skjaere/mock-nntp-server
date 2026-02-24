@@ -67,6 +67,10 @@ object NntpMockResponses {
         return yencBodyMocks[articleId]
     }
 
+    fun removeYencBodyMock(articleId: String) {
+        yencBodyMocks.remove(articleId)
+    }
+
     fun clearYencBodyMocks() {
         yencBodyMocks.clear()
     }

@@ -79,6 +79,10 @@ class MockNntpClient(private val baseUrl: String) : AutoCloseable {
         }
     }
 
+    suspend fun removeYencBodyExpectation(articleId: String) {
+        httpClient.delete("$baseUrl/mocks/yenc-body/${articleId.encodeURLPath()}")
+    }
+
     suspend fun clearYencBodyExpectations() {
         httpClient.delete("$baseUrl/mocks/yenc-body")
     }
