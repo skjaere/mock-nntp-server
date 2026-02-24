@@ -101,6 +101,12 @@ fun Application.module(nntpPort: ServerSocket) {
             call.respondText("All yenc body mocks cleared.", status = HttpStatusCode.OK)
         }
 
+        delete("/mocks/yenc-body/{articleId}") {
+            val articleId = call.parameters["articleId"]!!
+            NntpMockResponses.removeYencBodyMock(articleId)
+            call.respondText("Yenc body mock for article '$articleId' removed.", status = HttpStatusCode.OK)
+        }
+
         post("/mocks/stat") {
             val request = call.receive<StatMockRequest>()
             NntpMockResponses.addStatMock(request.articleId, request.exists)
@@ -191,8 +197,12 @@ fun handleNntpClient(clientSocket: Socket) {
                         outputStream.write(yencData)
                         outputStream.write("\r\n.\r\n".toByteArray())
                         outputStream.flush()
-                        continue
+                    } else {
+                        val responseLine = "430 No Such Article Found"
+                        println("SERVER SEND: $responseLine")
+                        writer.println(responseLine)
                     }
+                    continue
                 }
 
                 val mockResponse = NntpMockResponses.getMockResponse(command)
