@@ -252,7 +252,7 @@ class NntpIntegrationTest {
                             if (line == null) break
                             response += "$line\n"
                             if (line == ".") break
-                            if (line.startsWith("5") && line.length >= 3 && line[3] == ' ') break
+                            if ((line.startsWith("4") || line.startsWith("5")) && line.length >= 3 && line[3] == ' ') break // NNTP error response
                         } catch (e: SocketTimeoutException) {
                             println("NNTP Read Timeout for command: $command")
                             break
@@ -367,9 +367,9 @@ class NntpIntegrationTest {
         val clearResponse = client.delete("/mocks/yenc-body")
         assertEquals(HttpStatusCode.OK, clearResponse.status)
 
-        // Now the yenc mock should be gone, should get 500
+        // Now the yenc mock should be gone, should get 430
         val response2 = sendNntpCommandRaw(port.localPort, "BODY $articleId")
-        assertTrue(response2.startsWith("500"))
+        assertTrue(response2.startsWith("430"))
     }
 
     @Test
