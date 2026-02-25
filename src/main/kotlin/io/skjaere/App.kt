@@ -256,6 +256,10 @@ fun handleNntpClient(clientSocket: Socket) {
                         println("SERVER SEND: $errorLine")
                         writer.println(errorLine)
                     }
+                } else if (command == "BODY") {
+                    val errorLine = "430 No Such Article Found"
+                    println("SERVER SEND: $errorLine")
+                    writer.println(errorLine)
                 } else {
                     val errorLine = "500 Command not recognized"
                     println("SERVER SEND: $errorLine")
