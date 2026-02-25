@@ -38,6 +38,7 @@ dependencies {
 
     testImplementation(libs.ktor.client.serialization)
     testImplementation(libs.ktor.server.test.host)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.3")
 }
 
 jib {

@@ -51,7 +51,7 @@ class NntpIntegrationTest {
                             if (line == null) break // Connection closed
                             response += "$line\n"
                             if (line == ".") break // End of multiline
-                            if (line.startsWith("5") && line.length >= 3 && line[3] == ' ') break // NNTP error response (e.g., 500 )
+                            if ((line.startsWith("4") || line.startsWith("5")) && line.length >= 3 && line[3] == ' ') break // NNTP error response
                         } catch (e: SocketTimeoutException) {
                             println("NNTP Read Timeout for command: $command")
                             break // Exit loop on timeout

@@ -18,6 +18,8 @@ import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import io.skjaere.nntp.NntpMockResponse
 import io.skjaere.nntp.NntpMockResponses
 import io.skjaere.nntp.RawYencBodyRequest
@@ -127,14 +129,25 @@ suspend fun startNntpServer(socket: ServerSocket): Int = coroutineScope {
     val nntpPort = socket.localPort
     println("NNTP Server starting on port $nntpPort...")
 
+    socket.soTimeout = 1000
     launch(Dispatchers.IO) {
-        while (isActive) {
-            val clientSocket = socket.accept()
-            println("NNTP Client connected from ${clientSocket.inetAddress.hostAddress}")
+        try {
+            while (isActive) {
+                try {
+                    val clientSocket = socket.accept()
+                    println("NNTP Client connected from ${clientSocket.inetAddress.hostAddress}")
 
-            launch(Dispatchers.IO) {
-                handleNntpClient(clientSocket)
+                    launch(Dispatchers.IO) {
+                        handleNntpClient(clientSocket)
+                    }
+                } catch (_: SocketTimeoutException) {
+                    // timeout on accept(), loop back to check isActive
+                }
             }
+        } catch (_: SocketException) {
+            // socket closed
+        } finally {
+            socket.close()
         }
     }
     nntpPort
@@ -197,12 +210,8 @@ fun handleNntpClient(clientSocket: Socket) {
                         outputStream.write(yencData)
                         outputStream.write("\r\n.\r\n".toByteArray())
                         outputStream.flush()
-                    } else {
-                        val responseLine = "430 No Such Article Found"
-                        println("SERVER SEND: $responseLine")
-                        writer.println(responseLine)
+                        continue
                     }
-                    continue
                 }
 
                 val mockResponse = NntpMockResponses.getMockResponse(command)
