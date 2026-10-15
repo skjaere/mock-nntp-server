@@ -56,6 +56,8 @@ jib {
         mainClass = "io.skjaere.AppKt"
         ports = listOf("8081/tcp", "1119/tcp")
         jvmFlags = listOf("-Xms512m", "-Xmx1024m")
+        // The build time instead of jib's default epoch, so an image can be told apart from source
+        creationTime = "USE_CURRENT_TIMESTAMP"
     }
 }
 
