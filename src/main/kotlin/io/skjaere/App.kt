@@ -26,9 +26,18 @@ import io.skjaere.nntp.RawYencBodyRequest
 import io.skjaere.nntp.StatMockRequest
 import io.skjaere.nntp.YencBodyRequest
 import io.skjaere.yenc.YencEncoder
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Base64
 
 val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+// DATE answers with the server's time in UTC (RFC 3977 7.1)
+private val nntpDateFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(ZoneOffset.UTC)
+
+// CAPABILITIES advertises reading only: no AUTHINFO or MODE-READER, which the mock doesn't answer
+private val nntpCapabilities = listOf("VERSION 2", "READER", "IMPLEMENTATION mock-nntp-server")
 
 fun Application.module(nntpPort: ServerSocket) {
     install(ContentNegotiation) {
@@ -256,14 +265,44 @@ fun handleNntpClient(clientSocket: Socket) {
                         println("SERVER SEND: $errorLine")
                         writer.println(errorLine)
                     }
-                } else if (command == "BODY") {
-                    val errorLine = "430 No Such Article Found"
-                    println("SERVER SEND: $errorLine")
-                    writer.println(errorLine)
-                } else {
-                    val errorLine = "500 Command not recognized"
-                    println("SERVER SEND: $errorLine")
-                    writer.println(errorLine)
+                } else when (command) {
+                    // Commands with no mock get the answers RFC 3977 gives them
+                    "BODY", "STAT" -> {
+                        val errorLine = "430 No Such Article Found"
+                        println("SERVER SEND: $errorLine")
+                        writer.println(errorLine)
+                    }
+
+                    "QUIT" -> {
+                        val responseLine = "205 Connection closing"
+                        println("SERVER SEND: $responseLine")
+                        writer.println(responseLine)
+                        break
+                    }
+
+                    "DATE" -> {
+                        val responseLine = "111 ${nntpDateFormat.format(Instant.now())}"
+                        println("SERVER SEND: $responseLine")
+                        writer.println(responseLine)
+                    }
+
+                    "CAPABILITIES" -> {
+                        val firstLine = "101 Capability list follows"
+                        println("SERVER SEND: $firstLine")
+                        writer.println(firstLine)
+                        nntpCapabilities.forEach { capability ->
+                            println("SERVER SEND: $capability")
+                            writer.println(capability)
+                        }
+                        println("SERVER SEND: .")
+                        writer.println(".")
+                    }
+
+                    else -> {
+                        val errorLine = "500 Command not recognized"
+                        println("SERVER SEND: $errorLine")
+                        writer.println(errorLine)
+                    }
                 }
             }
         } catch (e: Exception) {

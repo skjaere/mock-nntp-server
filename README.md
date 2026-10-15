@@ -252,9 +252,14 @@ The Ktor HTTP server runs on port `8081` and the mock NNTP server on port `1119`
 
 When the server receives an NNTP command, it resolves the response in this order:
 
-1. **Article-keyed yenc body mock** -- If the command is `BODY` and an article ID is provided, the server checks for a yenc body mock matching that exact article ID.
+1. **Article-keyed mocks** -- For `STAT`, a stat mock for that article ID answers `223` or `430`, and an article with a yenc body mock answers `223`. For `BODY`, a yenc body mock for that exact article ID returns its body.
 2. **Command-level mock** -- Falls back to the command-keyed mock (e.g., all `BODY` commands return the same response).
-3. **500 error** -- If no mock is configured, responds with `500 Command not recognized`.
+3. **Built-in answers** -- With no mock, these commands answer as RFC 3977 does:
+    - `BODY` and `STAT`: `430 No Such Article Found`
+    - `QUIT`: `205 Connection closing`, then the server closes the connection
+    - `DATE`: `111 yyyyMMddHHmmss`, the server's time in UTC
+    - `CAPABILITIES`: `101`, then `VERSION 2`, `READER` and `IMPLEMENTATION mock-nntp-server`, ending with `.`
+4. **500 error** -- Any other command with no mock responds with `500 Command not recognized`.
 
 ## Technologies Used
 
