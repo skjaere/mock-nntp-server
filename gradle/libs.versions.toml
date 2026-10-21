@@ -32,4 +32,4 @@ rapidyenc-kotlin-wrapper = { module = "com.github.skjaere:rapidyenc-kotlin-wrapp
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.0" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.3.0" }
-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version = "0.9.1" }
+kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version = "0.9.11" }
