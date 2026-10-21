@@ -30,6 +30,6 @@ jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 rapidyenc-kotlin-wrapper = { module = "com.github.skjaere:rapidyenc-kotlin-wrapper", version.ref = "rapidyenc-kotlin-wrapper" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.0" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.3.0" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.21" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.3.21" }
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version = "0.9.11" }
