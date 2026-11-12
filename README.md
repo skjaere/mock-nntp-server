@@ -24,6 +24,7 @@ Add the dependency via [JitPack](https://jitpack.io/#skjaere/mock-nntp-server):
 ```kotlin
 // build.gradle.kts
 repositories {
+    mavenCentral()
     maven("https://jitpack.io")
 }
 
