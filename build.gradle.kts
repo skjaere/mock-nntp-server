@@ -101,9 +101,10 @@ publishing {
     }
 }
 
-// The jars carry the licence in a folder of their own under META-INF, so they
-// don't clash with another library's in an app that packs several.
-tasks.withType<Jar>().configureEach {
+// The licence goes in with the resources, in a folder of its own under META-INF, so every packaging carries it: the
+// jars, the distributions and the Docker image, which jib builds from the classes and resources rather than the jar.
+// The folder keeps it from clashing with another library's in an app that packs several.
+tasks.processResources {
     into("META-INF/${project.name}") {
         from("LICENSE.md")
     }
