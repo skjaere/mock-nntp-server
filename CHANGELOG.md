@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/skjaere/mock-nntp-server/compare/v0.2.0...v0.2.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* answer unmocked STAT, QUIT, DATE and CAPABILITIES per RFC 3977 ([09a6664](https://github.com/skjaere/mock-nntp-server/commit/09a666468b54d432b004c82a6009eb158b5d4dfb))
+* stamp the Docker image with its build time ([bc43233](https://github.com/skjaere/mock-nntp-server/commit/bc43233b02c453a8a6345ab6f31e5cb661ecd3da))
+
 ## [0.2.0](https://github.com/skjaere/mock-nntp-server/compare/v0.1.0...v0.2.0) (2026-02-25)
 
 
