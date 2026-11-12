@@ -285,3 +285,11 @@ When the server receives an NNTP command, it resolves the response in this order
 *   **Testcontainers 2.x**
 *   **`kotlinx.coroutines`**
 *   **rapidyenc** (native yenc encoding via JNA)
+
+## License
+
+This repository's own code is under the [PolyForm Noncommercial License 1.0.0](LICENSE.md) (SPDX `PolyForm-Noncommercial-1.0.0`): it is free for any non-commercial use, and commercial use needs the author's permission.
+
+These files keep their own licence:
+
+- The Gradle wrapper (`gradlew`, `gradlew.bat` and `gradle/wrapper/`): Apache License 2.0 (SPDX `Apache-2.0`).
