@@ -76,9 +76,9 @@ java {
 }
 
 tasks.withType<Test> {
-    val libPath = System.getenv("RAPIDYENC_LIB_PATH")
-        ?: "/path/to/rapidyenc/build"
-    systemProperty("jna.library.path", libPath)
+    // The yEnc encoder loads the librapidyenc.so its wrapper bundles. RAPIDYENC_LIB_PATH points the tests at a folder
+    // holding another build of it.
+    System.getenv("RAPIDYENC_LIB_PATH")?.let { systemProperty("jna.library.path", it) }
 }
 
 application {

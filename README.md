@@ -209,6 +209,21 @@ class MyNntpIntegrationTest {
 }
 ```
 
+## Building
+
+The server and its client are compiled with a JDK 25 toolchain (the Docker image runs on Java 25). Gradle downloads the toolchain when none is installed. The Gradle wrapper (Gradle 9.3.1) runs on JDK 17 or newer; CI runs it on JDK 25.
+
+```bash
+./gradlew build                # Build and run the tests
+./gradlew publishToMavenLocal  # Install to the local Maven repository
+```
+
+The tests start the server in process through Ktor's test host, so they need no Docker. The yEnc encoder loads the `librapidyenc.so` bundled in [rapidyenc-kotlin-wrapper](https://github.com/skjaere/rapidyenc-kotlin-wrapper). To use another build of rapidyenc, set `RAPIDYENC_LIB_PATH` to the folder that holds its `librapidyenc.so`:
+
+```bash
+RAPIDYENC_LIB_PATH=/path/to/rapidyenc/build ./gradlew test
+```
+
 ## Running Standalone
 
 ### Docker

@@ -115,7 +115,7 @@ class MockNntpClient(private val baseUrl: String) : AutoCloseable {
         files: List<NzbFileSpec>,
         segmentSize: Int = 750_000,
         group: String = "alt.binaries.test",
-        poster: String = "test@test.com"
+        poster: String = "poster@example.com"
     ): String {
         val nzbFiles = StringBuilder()
         for (spec in files) {
