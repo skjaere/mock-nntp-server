@@ -28,7 +28,7 @@ dependencies {
     implementation(libs.jna)
 
     // Archive generation for test helpers
-    api("com.github.skjaere:kotlin-compression-utils:v0.3.1")
+    api("com.github.skjaere:kotlin-compression-utils:v0.4.1")
 
     // Testcontainer client dependencies
     api(libs.testcontainers)
